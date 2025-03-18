@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg17
+    container_name: trading_sim_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-tradingapp}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-trading_sim}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

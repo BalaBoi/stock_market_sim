@@ -1,0 +1,7 @@
+[http]
+ip = "127.0.0.1"
+port = 8000
+
+[postgres]
+host = "127.0.0.1"
+password = "password"

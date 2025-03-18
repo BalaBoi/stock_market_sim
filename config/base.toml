@@ -1,0 +1,7 @@
+name = "trading_sim"
+
+[postgres]
+username = "tradingapp"
+port = 5432
+database = "trading_sim"
+max_connections = 50
