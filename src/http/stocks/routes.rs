@@ -1,15 +1,14 @@
-use axum::{response::Json, routing::get, extract::State, Router};
+use axum::{Router, extract::State, response::Json, routing::get};
 use sqlx::PgPool;
 use tracing::instrument;
 
-use crate::http::{error::Result, state::ApiState};
 use super::db::{self, Stock};
+use crate::http::{error::Result, state::ApiState};
 
 pub const ROOT: &str = "/stocks";
 
 pub fn router() -> Router<ApiState> {
-    Router::new()
-        .route("/", get(get_stocks))
+    Router::new().route("/", get(get_stocks))
 }
 
 #[instrument(skip_all, fields(action = "stocks::get_stocks route"))]

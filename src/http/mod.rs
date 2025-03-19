@@ -12,9 +12,9 @@ use tower_http::{ServiceBuilderExt, request_id::MakeRequestUuid, trace::TraceLay
 use health_check::health_check;
 use tracing::info_span;
 
+mod error;
 mod health_check;
 mod state;
-mod error;
 mod stocks;
 
 pub async fn serve_app(listener: TcpListener, pg_pool: PgPool) {

@@ -1,4 +1,7 @@
-use axum::{http::StatusCode, response::{Response, IntoResponse}};
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use thiserror::Error;
 use tracing::error;
 
