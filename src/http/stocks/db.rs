@@ -1,3 +1,4 @@
+use rust_decimal::Decimal;
 use serde::Serialize;
 use sqlx::{PgPool, query_as};
 use time::OffsetDateTime;
@@ -20,6 +21,7 @@ pub(crate) struct Stock {
     pub id: Uuid,
     pub symbol: String,
     pub name: String,
+    pub current_price: Decimal,
     pub created_at: OffsetDateTime,
     pub updated_at: OffsetDateTime,
 }

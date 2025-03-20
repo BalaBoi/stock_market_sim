@@ -1,4 +1,5 @@
 use sqlx::{PgPool, query};
+use rust_decimal::{prelude::FromPrimitive, Decimal};
 use stock_market_sim::Settings;
 
 #[tokio::main]
@@ -17,38 +18,38 @@ async fn main() {
 
 async fn seed_stocks(pool: PgPool) {
     let stocks = vec![
-        ("AAPL", "Apple Inc."),
-        ("MSFT", "Microsoft Corporation"),
-        ("GOOGL", "Alphabet Inc."),
-        ("AMZN", "Amazon.com Inc."),
-        ("META", "Meta Platforms Inc."),
-        ("TSLA", "Tesla Inc."),
-        ("NVDA", "NVIDIA Corporation"),
-        ("JPM", "JPMorgan Chase & Co."),
-        ("V", "Visa Inc."),
-        ("WMT", "Walmart Inc."),
-        ("PG", "Procter & Gamble Co."),
-        ("JNJ", "Johnson & Johnson"),
-        ("UNH", "UnitedHealth Group Inc."),
-        ("HD", "Home Depot Inc."),
-        ("MA", "Mastercard Inc."),
-        ("BAC", "Bank of America Corp."),
-        ("PFE", "Pfizer Inc."),
-        ("DIS", "The Walt Disney Company"),
-        ("NFLX", "Netflix Inc."),
-        ("CSCO", "Cisco Systems Inc."),
+        ("AAPL", "Apple Inc.", 195.61),
+        ("MSFT", "Microsoft Corporation", 431.24),
+        ("GOOGL", "Alphabet Inc.", 171.83),
+        ("AMZN", "Amazon.com Inc.", 187.42),
+        ("META", "Meta Platforms Inc.", 519.73),
+        ("TSLA", "Tesla Inc.", 176.85),
+        ("NVDA", "NVIDIA Corporation", 136.82),
+        ("JPM", "JPMorgan Chase & Co.", 208.97),
+        ("V", "Visa Inc.", 275.30),
+        ("WMT", "Walmart Inc.", 70.84),
+        ("PG", "Procter & Gamble Co.", 170.36),
+        ("JNJ", "Johnson & Johnson", 152.49),
+        ("UNH", "UnitedHealth Group Inc.", 537.28),
+        ("HD", "Home Depot Inc.", 361.57),
+        ("MA", "Mastercard Inc.", 471.65),
+        ("BAC", "Bank of America Corp.", 40.83),
+        ("PFE", "Pfizer Inc.", 27.18),
+        ("DIS", "The Walt Disney Company", 116.32),
+        ("NFLX", "Netflix Inc.", 687.90),
+        ("CSCO", "Cisco Systems Inc.", 50.42),
     ];
-
     for stock in stocks {
         let _ = query!(
             r#"
-            INSERT INTO stocks (symbol, name)
-            VALUES ($1, $2)
+            INSERT INTO stocks (symbol, name, current_price)
+            VALUES ($1, $2, $3)
             ON CONFLICT (symbol) DO UPDATE
             SET name = $2
             "#,
             stock.0,
-            stock.1
+            stock.1,
+            Decimal::from_f64(stock.2)
         )
         .execute(&pool)
         .await
