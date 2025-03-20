@@ -1,5 +1,6 @@
-use stock_market_sim::{Settings, init_tracing_subscriber, serve_app};
+use stock_market_sim::{Settings, StockPriceGenerator, init_tracing_subscriber, serve_app};
 use tokio::net::TcpListener;
+use tracing::error;
 
 #[tokio::main]
 async fn main() {
@@ -13,5 +14,12 @@ async fn main() {
         .create_pool()
         .await
         .expect("should be able to get a pool to the postgres instance");
+
+    let price_generator = StockPriceGenerator::new(pg_pool.clone(), 50);
+    let _ = tokio::spawn(async move {
+        if let Err(e) = price_generator.run().await {
+            error!(error = ?e, "price generator errored");
+        }
+    });
     serve_app(listener, pg_pool).await;
 }

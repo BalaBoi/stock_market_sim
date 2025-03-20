@@ -1,5 +1,5 @@
+use rust_decimal::{Decimal, prelude::FromPrimitive};
 use sqlx::{PgPool, query};
-use rust_decimal::{prelude::FromPrimitive, Decimal};
 use stock_market_sim::Settings;
 
 #[tokio::main]
