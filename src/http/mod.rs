@@ -15,7 +15,7 @@ use tracing::info_span;
 mod error;
 mod health_check;
 mod state;
-mod stocks;
+pub mod stocks;
 
 pub async fn serve_app(listener: TcpListener, pg_pool: PgPool) {
     let state = ApiState::new(pg_pool);

@@ -8,3 +8,17 @@ create table stock_prices (
 );
 
 select create_hypertable('stock_prices', 'time');
+
+create or replace function update_stock_price()
+returns trigger as $$
+begin
+    insert into stock_prices (time, stock_id, price)
+    values (NEW.updated_at, NEW.id, NEW.current_price);
+    
+    return NEW;
+end;
+$$ language plpgsql;
+
+create trigger sync_stock_price_trigger
+after insert or update of current_price on stocks
+for each row execute function update_stock_price();

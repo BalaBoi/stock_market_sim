@@ -16,7 +16,7 @@ pub async fn get_stocks(pool: &PgPool) -> Result<Vec<Stock>> {
 }
 
 #[derive(Debug, Serialize)]
-pub struct Stock {
+pub(crate) struct Stock {
     pub id: Uuid,
     pub symbol: String,
     pub name: String,
