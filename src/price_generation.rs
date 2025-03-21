@@ -39,12 +39,13 @@ async fn get_random_stock(pool: &PgPool) -> anyhow::Result<Stock> {
 
 pub struct StockPriceGenerator {
     pool: PgPool,
-    max_delta: u32,
+    max_price_delta: u32,
+    max_wait_time: u32,
 }
 
 impl StockPriceGenerator {
-    pub fn new(pool: PgPool, max_delta: u32) -> Self {
-        Self { pool, max_delta }
+    pub fn new(pool: PgPool, max_price_delta: u32, max_wait_time: u32) -> Self {
+        Self { pool, max_price_delta, max_wait_time }
     }
 
     pub async fn run(&self) -> anyhow::Result<()> {
@@ -52,14 +53,14 @@ impl StockPriceGenerator {
             let random_stock = get_random_stock(&self.pool).await?;
 
             let random_price_delta = Decimal::from_i64(
-                rand::rng().random_range((-1 * self.max_delta as i64)..(self.max_delta as i64)),
+                rand::rng().random_range((-1 * self.max_price_delta as i64)..(self.max_price_delta as i64)),
             )
             .unwrap();
             let updated_price = random_stock.current_price + random_price_delta;
             debug!(updated_stock = %random_stock.symbol, %updated_price, old_price = %random_stock.current_price, "Updating stock price");
             update_stock_price(&self.pool, random_stock.id, updated_price).await?;
 
-            let sleep_seconds = rand::rng().random_range(0..10) as u64;
+            let sleep_seconds = rand::rng().random_range(0..self.max_wait_time) as u64;
             tokio::time::sleep(Duration::from_secs(sleep_seconds)).await;
         }
     }
