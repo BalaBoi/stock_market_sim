@@ -1,7 +1,5 @@
 use axum::{
-    Router,
-    http::{HeaderName, Request},
-    routing::get,
+    http::{HeaderName, Request}, middleware, routing::get, Router
 };
 use sqlx::PgPool;
 use state::ApiState;
@@ -17,6 +15,9 @@ mod health_check;
 mod state;
 mod stocks;
 pub use stocks::db as stocks_db;
+
+use crate::sessions::session_middleware;
+mod users;
 
 pub async fn serve_app(listener: TcpListener, pg_pool: PgPool) {
     let state = ApiState::new(pg_pool);
@@ -53,6 +54,7 @@ fn api_router(state: ApiState) -> Router {
                         )
                     }),
                 )
+                .layer(middleware::from_fn(session_middleware))
                 .propagate_request_id(req_id_header),
         )
 }
