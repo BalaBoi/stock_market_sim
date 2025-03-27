@@ -5,6 +5,8 @@ use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use sqlx::{PgPool, postgres::PgPoolOptions};
 
+use crate::RedisPool;
+
 impl Settings {
     pub fn load_settings() -> Self {
         let app_mode = std::env::var("APP_MODE").unwrap_or_else(|_| "local".to_string());
@@ -26,6 +28,7 @@ impl Settings {
 pub struct Settings {
     pub http: HttpSettings,
     pub postgres: PostgresSettings,
+    pub redis: RedisSettings,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -67,5 +70,26 @@ impl PostgresSettings {
             self.port,
             self.database
         )
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct RedisSettings {
+    pub host: String,
+    pub port: u16,
+    pub password: SecretString,
+}
+
+impl RedisSettings {
+    pub async fn create_pool(&self) -> anyhow::Result<RedisPool> {
+        let url = format!(
+            "redis://:{}@{}/{}",
+            self.password.expose_secret(),
+            self.host,
+            self.port
+        );
+        let config = deadpool_redis::Config::from_url(&url);
+
+        Ok(config.create_pool(Some(deadpool_redis::Runtime::Tokio1))?)
     }
 }

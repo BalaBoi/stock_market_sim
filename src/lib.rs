@@ -7,3 +7,5 @@ pub use settings::Settings;
 mod price_generation;
 pub use price_generation::StockPriceGenerator;
 mod sessions;
+mod util;
+pub use util::RedisPool;

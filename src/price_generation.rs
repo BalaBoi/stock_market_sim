@@ -45,7 +45,11 @@ pub struct StockPriceGenerator {
 
 impl StockPriceGenerator {
     pub fn new(pool: PgPool, max_price_delta: u32, max_wait_time: u32) -> Self {
-        Self { pool, max_price_delta, max_wait_time }
+        Self {
+            pool,
+            max_price_delta,
+            max_wait_time,
+        }
     }
 
     pub async fn run(&self) -> anyhow::Result<()> {
@@ -53,7 +57,8 @@ impl StockPriceGenerator {
             let random_stock = get_random_stock(&self.pool).await?;
 
             let random_price_delta = Decimal::from_i64(
-                rand::rng().random_range((-1 * self.max_price_delta as i64)..(self.max_price_delta as i64)),
+                rand::rng()
+                    .random_range(-(self.max_price_delta as i64)..(self.max_price_delta as i64)),
             )
             .unwrap();
             let updated_price = random_stock.current_price + random_price_delta;

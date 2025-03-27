@@ -1,5 +1,8 @@
 use axum::{
-    http::{HeaderName, Request}, middleware, routing::get, Router
+    Router,
+    http::{HeaderName, Request},
+    middleware,
+    routing::get,
 };
 use sqlx::PgPool;
 use state::ApiState;
@@ -16,11 +19,11 @@ mod state;
 mod stocks;
 pub use stocks::db as stocks_db;
 
-use crate::sessions::session_middleware;
+use crate::{RedisPool, sessions::session_middleware};
 mod users;
 
-pub async fn serve_app(listener: TcpListener, pg_pool: PgPool) {
-    let state = ApiState::new(pg_pool);
+pub async fn serve_app(listener: TcpListener, pg_pool: PgPool, redis_pool: RedisPool) {
+    let state = ApiState::new(pg_pool, redis_pool);
     let app = api_router(state);
 
     axum::serve(listener, app)
@@ -33,7 +36,7 @@ fn api_router(state: ApiState) -> Router {
     Router::new()
         .route("/health_check", get(health_check))
         .nest(stocks::ROOT, stocks::router())
-        .with_state(state)
+        .with_state(state.clone())
         .layer(
             ServiceBuilder::new()
                 .set_request_id(req_id_header.clone(), MakeRequestUuid)
@@ -54,7 +57,7 @@ fn api_router(state: ApiState) -> Router {
                         )
                     }),
                 )
-                .layer(middleware::from_fn(session_middleware))
+                .layer(middleware::from_fn_with_state(state, session_middleware))
                 .propagate_request_id(req_id_header),
         )
 }

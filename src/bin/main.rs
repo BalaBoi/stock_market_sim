@@ -14,12 +14,17 @@ async fn main() {
         .create_pool()
         .await
         .expect("should be able to get a pool to the postgres instance");
+    let redis_pool = settings
+        .redis
+        .create_pool()
+        .await
+        .expect("failure in creating redis pool");
 
     let price_generator = StockPriceGenerator::new(pg_pool.clone(), 50, 10);
-    let _ = tokio::spawn(async move {
+    std::mem::drop(tokio::spawn(async move {
         if let Err(e) = price_generator.run().await {
             error!(error = ?e, "price generator errored");
         }
-    });
-    serve_app(listener, pg_pool).await;
+    }));
+    serve_app(listener, pg_pool, redis_pool).await;
 }
