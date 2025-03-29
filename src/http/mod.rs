@@ -1,7 +1,8 @@
+use std::sync::Arc;
+
 use axum::{
     Router,
     http::{HeaderName, Request},
-    middleware,
     routing::get,
 };
 use sqlx::PgPool;
@@ -17,10 +18,10 @@ mod error;
 mod health_check;
 mod state;
 mod stocks;
+mod users;
 pub use stocks::db as stocks_db;
 
-use crate::{RedisPool, sessions::session_middleware};
-mod users;
+use crate::{sessions::{SessionLayer, Store}, RedisPool};
 
 pub async fn serve_app(listener: TcpListener, pg_pool: PgPool, redis_pool: RedisPool) {
     let state = ApiState::new(pg_pool, redis_pool);
@@ -33,6 +34,7 @@ pub async fn serve_app(listener: TcpListener, pg_pool: PgPool, redis_pool: Redis
 
 fn api_router(state: ApiState) -> Router {
     let req_id_header = HeaderName::from_static("req-id");
+    let session_store = Arc::new(Store::new(state.get_redis_pool()));
     Router::new()
         .route("/health_check", get(health_check))
         .nest(stocks::ROOT, stocks::router())
@@ -57,7 +59,7 @@ fn api_router(state: ApiState) -> Router {
                         )
                     }),
                 )
-                .layer(middleware::from_fn_with_state(state, session_middleware))
-                .propagate_request_id(req_id_header),
+                .layer(SessionLayer::new(session_store))
+                .propagate_request_id(req_id_header)
         )
 }

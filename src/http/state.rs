@@ -16,4 +16,8 @@ impl ApiState {
             redis_pool,
         }
     }
+
+    pub fn get_redis_pool(&self) -> RedisPool {
+        self.redis_pool.clone()
+    }
 }

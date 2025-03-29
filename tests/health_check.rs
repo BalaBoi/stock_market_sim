@@ -1,6 +1,6 @@
 use reqwest::StatusCode;
 use sqlx::{PgPool, test};
-use stock_market_sim::{serve_app, Settings};
+use stock_market_sim::{Settings, serve_app};
 use tokio::net::TcpListener;
 
 #[test]
@@ -12,7 +12,11 @@ async fn health_check_returns_ok(pool: PgPool) {
         .local_addr()
         .expect("should be able to get local address from listener");
     let settings = Settings::load_settings();
-    std::mem::drop(tokio::spawn(serve_app(listener, pool, settings.redis.create_pool().await.unwrap())));
+    std::mem::drop(tokio::spawn(serve_app(
+        listener,
+        pool,
+        settings.redis.create_pool().await.unwrap(),
+    )));
     let client = reqwest::Client::new();
 
     let response = client

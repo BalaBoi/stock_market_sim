@@ -1,7 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
-use uuid::Uuid;
 use deadpool_redis::redis::cmd;
+use uuid::Uuid;
 
 use crate::RedisPool;
 
@@ -9,6 +9,12 @@ use super::session::Session;
 
 #[derive(Debug, Clone, Copy)]
 pub struct SessionId(Uuid);
+
+impl SessionId {
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+}
 
 impl FromStr for SessionId {
     type Err = uuid::Error;
@@ -19,6 +25,7 @@ impl FromStr for SessionId {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Store {
     redis_pool: RedisPool,
 }
